@@ -1,0 +1,5 @@
+.env
+package-lock.json
+node_modules/
+.idea
+trustana-shopify-app.iml
