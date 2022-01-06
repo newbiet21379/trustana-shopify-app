@@ -5,7 +5,7 @@ const querystring = require('querystring');
 const cookie = require('cookie');
 const express = require('express');
 const dotenv = require("dotenv");
-const Shopify = require("@shopify/shopify-api");
+const Shopify = require("@shopify/shopify-api").default;
 const {DataType} = require("@shopify/shopify-api");
 
 const app = express();
@@ -38,7 +38,7 @@ app.get('/shopify', (req, res) => {
 
 app.get('/shopify/callback', (req, res) => {
     const {shop, hmac, code, state} = req.query;
-    const stateCookie = cookie.parse(req.headers.cookie).state;
+    const stateCookie = cookie.parse(req.headerss.cookie).state;
 
     if (state !== stateCookie) {
         return res.status(403).send('Request origin cannot be verified '+JSON.stringify(req.query));
@@ -74,6 +74,7 @@ app.get('/shopify/callback', (req, res) => {
         request.post(accessTokenRequestUrl, {json: accessTokenPayload})
             .then((accessTokenResponse) => {
                 // const accessToken = accessTokenResponse.access_token;
+                console.log(JSON.stringify(accessTokenResponse))
                 res.end(JSON.stringify(accessTokenResponse))
                 // const shopRequestURL = 'https://' + shop + '/admin/api/2020-04/shop.json';
                 // const shopRequestHeaders = {'X-Shopify-Access-Token': accessToken};
@@ -99,8 +100,8 @@ app.get('/shopify/callback', (req, res) => {
 app.post("/createProduct", async (req,res) => {
     try {
         // const client = new Shopify.Clients.Rest(savedShop, savedAccessToken);
-        const shop = req.header.shop;
-        const accessToken = req.header.authorization;
+        const shop = req.headers.shop[0];
+        const accessToken = req.headers.authorization;
 
         console.log("SHOP", shop);
         console.log("ACCESS TOKEN", accessToken);
@@ -148,8 +149,8 @@ app.post("/createProduct", async (req,res) => {
 app.post("/updateProduct", async (req,res) => {
     try {
         // const client = new Shopify.Clients.Rest(savedShop, savedAccessToken);
-        const shop = req.header.shop;
-        const accessToken = req.header.authorization;
+        const shop = req.headers.shop[0];
+        const accessToken = req.headers.authorization;
         const client = new Shopify.Clients.Rest(shop, accessToken);
         const product = req.request.body.product;
         const ihubCode = product.tags;
@@ -183,8 +184,8 @@ app.post("/updateProduct", async (req,res) => {
 app.post("/deleteProduct", async (req,res) => {
     try {
         // const client = new Shopify.Clients.Rest(savedShop, savedAccessToken);
-        const shop = req.header.shop;
-        const accessToken = req.header.authorization;
+        const shop = req.headers.shop[0];
+        const accessToken = req.headers.authorization;
         const client = new Shopify.Clients.Rest(shop, accessToken);
         const ihubCode = req.request.body.ihubCode;
 
@@ -206,8 +207,8 @@ app.post("/deleteProduct", async (req,res) => {
 
 app.get("/checkIhubRequest", async (req,res) => {
     try {
-        const shop = req.header.shop;
-        const accessToken = req.header.authorization;
+        const shop = req.headers.shop[0];
+        const accessToken = req.headers.authorization;
         const client = new Shopify.Clients.Rest(shop, accessToken);
         const productId = req.request.body.productId;
 
@@ -236,8 +237,8 @@ app.get("/checkIhubRequest", async (req,res) => {
 
 app.get("/getProducts", async (req,res) => {
     try {
-        const shop = ctx.header.shop;
-        const accessToken = ctx.header.authorization;
+        const shop = req.headers.shop[0];
+        const accessToken = req.headers.authorization;
         const client = new Shopify.Clients.Rest(shop, accessToken);
         const dataProducts = await client.get({
             path: "products",
@@ -281,4 +282,4 @@ const findProduct = async (ihubCode, client) => {
     }
     return null;
 };
-app.listen(8081, () => console.log('Application listening on port 8081!'));
+app.listen(port, () => console.log('Application listening on port 8081!'));
